@@ -236,7 +236,9 @@ extern "C" {
 extern "C" {
 }*/
 
-#[link(name = "mpich")]
+// FIXME(20161127): linking with Intel MPI.
+#[link(name = "mpi")]
+//#[link(name = "mpich")]
 extern "C" {
   /*pub fn MPI_Init(argc: *mut c_int, argv: *mut *mut *mut c_char) -> c_int;
   pub fn MPI_Initialized() -> c_int;

@@ -517,6 +517,15 @@ impl MpiComm {
     Ok(())
   }
 
+  pub fn allreduce_in_place<T, Op>(&self, buf: &mut [T], _op: Op) -> Result<(), c_int>
+  where T: MpiData, Op: MpiOp {
+    let code = unsafe { MPI_Allreduce(buf.as_ptr() as *const c_void, buf.as_mut_ptr() as *mut c_void, buf.len() as c_int, T::datatype(), Op::op(), self.inner) };
+    if code != 0 {
+      return Err(code);
+    }
+    Ok(())
+  }
+
   pub fn nonblocking_allreduce<T, Op>(&self, src_buf: &[T], dst_buf: &mut [T], _op: Op) -> Result<MpiRequest, c_int>
   where T: MpiData, Op: MpiOp {
     assert_eq!(src_buf.len(), dst_buf.len());
