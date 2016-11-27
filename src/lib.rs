@@ -21,6 +21,9 @@ use std::slice::{from_raw_parts, from_raw_parts_mut};
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
+#[cfg(feature = "mpich")]
+type AintTy = i64;
+#[cfg(feature = "openmpi")]
 type AintTy = isize;
 
 lazy_static! {
@@ -470,6 +473,15 @@ impl MpiComm {
     })
   }
 
+  pub fn broadcast<T>(&self, buf: &mut [T], root: usize) -> Result<(), c_int>
+  where T: MpiData {
+    let code = unsafe { MPI_Bcast(buf.as_mut_ptr() as *mut c_void, buf.len() as c_int, T::datatype(), root as c_int, self.inner) };
+    if code != 0 {
+      return Err(code);
+    }
+    Ok(())
+  }
+
   pub fn nonblocking_broadcast<T>(&self, buf: &mut [T], root: usize) -> Result<MpiRequest, c_int>
   where T: MpiData {
     let mut req = MPI_Request::NULL();
@@ -493,6 +505,16 @@ impl MpiComm {
     Ok(MpiRequest{
       inner: req,
     })
+  }
+
+  pub fn allreduce<T, Op>(&self, src_buf: &[T], dst_buf: &mut [T], _op: Op) -> Result<(), c_int>
+  where T: MpiData, Op: MpiOp {
+    assert_eq!(src_buf.len(), dst_buf.len());
+    let code = unsafe { MPI_Allreduce(src_buf.as_ptr() as *const c_void, dst_buf.as_mut_ptr() as *mut c_void, src_buf.len() as c_int, T::datatype(), Op::op(), self.inner) };
+    if code != 0 {
+      return Err(code);
+    }
+    Ok(())
   }
 
   pub fn nonblocking_allreduce<T, Op>(&self, src_buf: &[T], dst_buf: &mut [T], _op: Op) -> Result<MpiRequest, c_int>
