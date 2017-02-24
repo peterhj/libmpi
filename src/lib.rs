@@ -38,7 +38,8 @@ pub struct MpiSession {
 
 impl Drop for MpiSession {
   fn drop(&mut self) {
-    let is_init = unsafe { MPI_Initialized() };
+    let mut is_init = 0;
+    unsafe { MPI_Initialized(&mut is_init as *mut _) };
     if is_init != 0 {
       unsafe { MPI_Finalize() };
     }
@@ -83,11 +84,15 @@ impl MpiSession {
             assert_eq!(provided, MPI_THREAD_MULTIPLE);
           }
         }
+        let mut is_init = 0;
+        unsafe { MPI_Initialized(&mut is_init as *mut _) };
+        assert!(is_init != 0);
         Ok(true)
       }
       x => {
         if x == level as usize {
-          let is_init = unsafe { MPI_Initialized() };
+          let mut is_init = 0;
+          unsafe { MPI_Initialized(&mut is_init as *mut _) };
           assert!(is_init != 0);
           Ok(false)
         } else {

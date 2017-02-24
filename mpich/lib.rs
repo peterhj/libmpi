@@ -243,7 +243,7 @@ extern "C" {}
 extern "C" {}
 #[link(name = "mpi")]
 extern "C" {}
-#[link(name = "mpigi")]
+#[link(name = "mpigi", kind = "static")]
 extern "C" {}
 #[link(name = "dl")]
 extern "C" {}
@@ -280,7 +280,7 @@ extern "C" {
 
   pub fn MPI_Init(argc: *mut c_int, argv: *mut *mut *mut c_char) -> c_int;
   pub fn MPI_Init_thread(argc: *mut c_int, argv: *mut *mut *mut c_char, required: c_int, provided: *mut c_int) -> c_int;
-  pub fn MPI_Initialized() -> c_int;
+  pub fn MPI_Initialized(flag: *mut c_int) -> c_int;
   pub fn MPI_Finalize() -> c_int;
   pub fn MPI_Abort(comm: MPI_Comm, errorcode: c_int) -> c_int;
 
